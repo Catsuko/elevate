@@ -58,6 +58,7 @@ GEM
       rubocop-factory_bot (~> 2.22)
     ruby-progressbar (1.13.0)
     unicode-display_width (2.4.2)
+    wisper_next (0.1.0)
 
 PLATFORMS
   x64-mingw-ucrt
@@ -67,6 +68,7 @@ DEPENDENCIES
   rspec!
   rubocop!
   rubocop-rspec!
+  wisper_next!
 
 BUNDLED WITH
    2.4.13
