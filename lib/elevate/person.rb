@@ -1,3 +1,6 @@
+require_relative 'events/wait_for_destination'
+require_relative 'events/wait_to_get_on'
+
 module Elevate
   class Person
     def initialize(destination_floor)

@@ -28,6 +28,14 @@ module Elevate
       @off_signals.add(floor)
     end
 
+    def stopping_at?(floor)
+      @off_signals.include?(floor)
+    end
+
+    def contains?(person)
+      @passengers.include?(person)
+    end
+
     def update
       floor_delta = target_floor <=> @current_floor
       return if floor_delta.zero?
@@ -46,7 +54,7 @@ module Elevate
     end
 
     def remove(person)
-      @passengers.remove(person)
+      @passengers.delete(person)
     end
 
     private
