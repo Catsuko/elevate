@@ -4,6 +4,7 @@ module Elevate
   class Elevator
     include WisperNext.publisher
 
+    # TODO: Refactor many instance variables into some cohesive components
     def initialize(floors, current_floor:, capacity:)
       @floors = floors
       ensure_floor_in_bounds!(current_floor)
