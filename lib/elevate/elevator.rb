@@ -4,6 +4,18 @@ module Elevate
   class Elevator
     include WisperNext.publisher
 
+    OutOfBoundsError = Class.new(StandardError) do
+      def initialize(floor)
+        super("Floor #{floor} is out of bounds.")
+      end
+    end
+
+    FullCapacityError = Class.new(StandardError) do
+      def initialize(capacity)
+        super("Elevator is at full capacity: #{capacity}/#{capacity}")
+      end
+    end
+
     # TODO: Refactor many instance variables into some cohesive components
     def initialize(floors, current_floor:, capacity:)
       @floors = floors
@@ -18,6 +30,7 @@ module Elevate
 
     def call_to(floor, direction:)
       ensure_floor_in_bounds!(floor)
+      return if floor == @current_floor
 
       signal = @on_signals.fetch(floor, 0) + (direction == :up ? 1 : -1)
       @on_signals.store(floor, signal.clamp(-1, 1))
@@ -25,6 +38,7 @@ module Elevate
 
     def select_destination(floor)
       ensure_floor_in_bounds!(floor)
+      return if floor == @current_floor
 
       @off_signals.add(floor)
     end
@@ -48,9 +62,10 @@ module Elevate
     end
 
     def add(person)
-      raise 'Elevator is full!' if @passengers.size >= @capacity
+      passengers = Set[person] + @passengers
+      raise FullCapacityError, @capacity if passengers.size > @capacity
 
-      @passengers.add(person)
+      @passengers = passengers
     end
 
     def remove(person)
@@ -68,7 +83,7 @@ module Elevate
     end
 
     def ensure_floor_in_bounds!(floor)
-      raise ArgumentError, "cannot travel to floor `#{floor}`" unless @floors.include?(floor)
+      raise OutOfBoundsError, floor unless @floors.include?(floor)
     end
   end
 end
