@@ -30,7 +30,7 @@ module Elevate
     end
 
     def stopping_at?(floor)
-      @off_signals.include?(floor)
+      @off_signals.include?(floor) || @on_signals.key?(floor)
     end
 
     def contains?(person)
@@ -44,8 +44,7 @@ module Elevate
       @current_floor = current_floor + floor_delta
       @on_signals.delete(@current_floor)
       @off_signals.delete(@current_floor)
-      broadcast(:elevator_arrived, elevator: self, floor: @current_floor,
-                                   direction: floor_delta.positive? ? :up : :down)
+      broadcast_arrival(@current_floor, direction: floor_delta.positive? ? :up : :down)
     end
 
     def add(person)
@@ -56,6 +55,10 @@ module Elevate
 
     def remove(person)
       @passengers.delete(person)
+    end
+
+    def broadcast_arrival(floor, travel_direction:)
+      broadcast(:elevator_arrived, elevator: self, floor: floor, direction: travel_direction)
     end
 
     private

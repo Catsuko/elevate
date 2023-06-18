@@ -8,8 +8,8 @@ module Elevate
     end
 
     def wait_for(elevator, from_floor:)
-      elevator.call_to(from)
       direction = from_floor < @destination_floor ? :up : :down
+      elevator.call_to(from_floor, direction: direction)
       elevator.subscribe(Events::WaitToGetOn.new(self, floor: from_floor, direction: direction))
     end
 

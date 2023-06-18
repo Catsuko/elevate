@@ -1,3 +1,9 @@
+GIT
+  remote: https://gitlab.com/kris.leech/wisper_next.git
+  revision: 8cc91618a57c5b7482f14dad2d7ea649bdf5b9f2
+  specs:
+    wisper_next (0.1.0)
+
 GEM
   specs:
 
@@ -58,7 +64,6 @@ GEM
       rubocop-factory_bot (~> 2.22)
     ruby-progressbar (1.13.0)
     unicode-display_width (2.4.2)
-    wisper_next (0.1.0)
 
 PLATFORMS
   x64-mingw-ucrt
