@@ -1,4 +1,5 @@
 require 'wisper_next'
+require_relative 'signals'
 
 module Elevate
   class Elevator
@@ -17,34 +18,32 @@ module Elevate
     end
 
     # TODO: Refactor many instance variables into some cohesive components
-    def initialize(floors, current_floor:, capacity:)
+    def initialize(floors, current_floor:, capacity:, signals: Signals.new)
       @floors = floors
       ensure_floor_in_bounds!(current_floor)
 
       @current_floor = current_floor
       @capacity = capacity
       @passengers = Set.new
-      @on_signals = {}
-      @off_signals = Set.new
+      @signals = signals
     end
 
     def call_to(floor, direction:)
       ensure_floor_in_bounds!(floor)
       return if floor == @current_floor
 
-      signal = @on_signals.fetch(floor, 0) + (direction == :up ? 1 : -1)
-      @on_signals.store(floor, signal.clamp(-1, 1))
+      @signals.enter_at(floor, direction: direction)
     end
 
     def select_destination(floor)
       ensure_floor_in_bounds!(floor)
       return if floor == @current_floor
 
-      @off_signals.add(floor)
+      @signals.exit_at(floor)
     end
 
     def stopping_at?(floor)
-      @off_signals.include?(floor) || @on_signals.key?(floor)
+      @signals.set?(floor)
     end
 
     def contains?(person)
@@ -55,9 +54,8 @@ module Elevate
       floor_delta = target_floor <=> @current_floor
       return if floor_delta.zero?
 
-      @current_floor = current_floor + floor_delta
-      @on_signals.delete(@current_floor)
-      @off_signals.delete(@current_floor)
+      @current_floor += floor_delta
+      @signals.clear_on(@current_floor)
       broadcast_arrival(@current_floor, direction: floor_delta.positive? ? :up : :down)
     end
 
