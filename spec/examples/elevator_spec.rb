@@ -74,4 +74,24 @@ RSpec.describe Elevate::Elevator do
       expect { elevator.remove(person) }.not_to raise_error
     end
   end
+
+  describe '#update' do
+    it 'moves one floor towards the target floor' do
+      skip('not implemented')
+    end
+
+    it 'does not stop' do
+      skip('not implemented')
+    end
+
+    context 'when the next floor is the target floor' do
+      it 'moves to the target floor' do
+        skip('not implemented')
+      end
+
+      it 'stops' do
+        skip('not implemented')
+      end
+    end
+  end
 end
