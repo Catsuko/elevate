@@ -32,14 +32,14 @@ RSpec.describe Elevate::Person do
     it 'stays on the elevator as it stops at other floors' do
       subject
       expect do
-        elevator.broadcast_arrival(destination.pred, travel_direction: :up)
+        elevator.broadcast_stop(destination.pred, travel_direction: :up)
       end.not_to change { elevator.contains?(person) }.from(true)
     end
 
     it 'gets off when the elevator reaches their destination' do
       subject
       expect do
-        elevator.broadcast_arrival(destination, travel_direction: :up)
+        elevator.broadcast_stop(destination, travel_direction: :up)
       end.to change { elevator.contains?(person) }.from(true).to(false)
     end
   end
@@ -66,7 +66,7 @@ RSpec.describe Elevate::Person do
     it 'does not enter the elevator when it arrives at other floors' do
       subject
       expect do
-        elevator.broadcast_arrival(destination, travel_direction: :up)
+        elevator.broadcast_stop(destination, travel_direction: :up)
       end.not_to change { elevator.contains?(person) }.from(false)
     end
 
@@ -74,14 +74,14 @@ RSpec.describe Elevate::Person do
       it 'enters when it is travelling in their direction' do
         subject
         expect do
-          elevator.broadcast_arrival(from_floor, travel_direction: :up)
+          elevator.broadcast_stop(from_floor, travel_direction: :up)
         end.to change { elevator.contains?(person) }.from(false).to(true)
       end
 
       it 'does not enter when it is travelling in the other direction' do
         subject
         expect do
-          elevator.broadcast_arrival(from_floor, travel_direction: :down)
+          elevator.broadcast_stop(from_floor, travel_direction: :down)
         end.not_to change { elevator.contains?(person) }.from(false)
       end
 
@@ -89,7 +89,7 @@ RSpec.describe Elevate::Person do
         elevator.add(described_class.new(destination))
         subject
         expect do
-          elevator.broadcast_arrival(from_floor, travel_direction: :up)
+          elevator.broadcast_stop(from_floor, travel_direction: :up)
         end.not_to change { elevator.contains?(person) }.from(false)
       end
     end

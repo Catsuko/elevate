@@ -56,7 +56,7 @@ module Elevate
 
       @current_floor += floor_delta
       @signals.clear_on(@current_floor)
-      broadcast_arrival(@current_floor, direction: floor_delta.positive? ? :up : :down)
+      broadcast_stop(@current_floor, direction: floor_delta.positive? ? :up : :down)
     end
 
     def add(person)
@@ -70,8 +70,8 @@ module Elevate
       @passengers.delete(person)
     end
 
-    def broadcast_arrival(floor, travel_direction:)
-      broadcast(:elevator_arrived, elevator: self, floor: floor, direction: travel_direction)
+    def broadcast_stop(floor, travel_direction:)
+      broadcast(:elevator_stopped, elevator: self, floor: floor, direction: travel_direction)
     end
 
     private

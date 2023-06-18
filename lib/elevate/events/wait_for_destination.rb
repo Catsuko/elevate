@@ -9,7 +9,7 @@ module Elevate
         @person = person
       end
 
-      def on_elevator_arrived(payload)
+      def on_elevator_stopped(payload)
         return unless @person.wants_to_get_off?(payload.fetch(:floor))
 
         elevator = payload.fetch(:elevator)
