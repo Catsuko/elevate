@@ -61,4 +61,17 @@ RSpec.describe Elevate::Elevator do
       expect { elevator.add(person) }.not_to raise_error
     end
   end
+
+  describe '#remove' do
+    let(:person) { Elevate::Person.new(current_floor + 1) }
+
+    it 'removes the person from the elevator' do
+      elevator.add(person)
+      expect { elevator.remove(person) }.to change { elevator.contains?(person) }.from(true).to(false)
+    end
+
+    it 'has no effect if the person is not in the elevator' do
+      expect { elevator.remove(person) }.not_to raise_error
+    end
+  end
 end
