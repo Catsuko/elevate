@@ -17,8 +17,10 @@ module Elevate
         return unless @floor == payload.fetch(:floor) && @direction == payload.fetch(:direction)
 
         elevator = payload.fetch(:elevator)
-        elevator.unsubscribe(self)
         @person.get_on(elevator)
+        elevator.unsubscribe(self)
+      rescue Elevator::FullCapacityError
+        # Elevator is full, wait for the next one :(
       end
     end
   end

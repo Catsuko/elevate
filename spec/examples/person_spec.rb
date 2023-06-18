@@ -62,6 +62,14 @@ RSpec.describe Elevate::Person do
       expect { subject }.to change { elevator.stopping_at?(from_floor) }.from(false).to(true)
     end
 
+    # From domain point of view, this is weird to test for, see comment in `events\wait_to_get_on.rb`.
+    it 'does not enter the elevator when it arrives at other floors' do
+      subject
+      expect do
+        elevator.broadcast_arrival(destination, travel_direction: :up)
+      end.not_to change { elevator.contains?(person) }.from(false)
+    end
+
     context 'when the elevator reaches their floor' do
       it 'enters when it is travelling in their direction' do
         subject
@@ -76,14 +84,14 @@ RSpec.describe Elevate::Person do
           elevator.broadcast_arrival(from_floor, travel_direction: :down)
         end.not_to change { elevator.contains?(person) }.from(false)
       end
-    end
 
-    # From domain point of view, this is weird to test for, see comment in `events\wait_to_get_on.rb`.
-    it 'does not enter the elevator when it arrives at other floors' do
-      subject
-      expect do
-        elevator.broadcast_arrival(destination, travel_direction: :up)
-      end.not_to change { elevator.contains?(person) }.from(false)
+      it 'does not enter when the elevator is full' do
+        elevator.add(described_class.new(destination))
+        subject
+        expect do
+          elevator.broadcast_arrival(from_floor, travel_direction: :up)
+        end.not_to change { elevator.contains?(person) }.from(false)
+      end
     end
   end
 end
