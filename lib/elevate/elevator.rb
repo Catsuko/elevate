@@ -1,5 +1,4 @@
 require 'wisper_next'
-require_relative 'signals'
 
 module Elevate
   class Elevator
@@ -18,25 +17,25 @@ module Elevate
     end
 
     # TODO: Refactor many instance variables into some cohesive components
-    def initialize(floors, current_floor:, capacity:, signals: Signals.new)
+    def initialize(floors, capacity:, current_floor:, stops: Set.new)
       @floors = floors
       ensure_floor_in_bounds!(current_floor)
 
       @current_floor = current_floor
       @capacity = capacity
       @passengers = Set.new
-      @signals = signals
+      @stops = stops
     end
 
     def select_destination(floor)
       ensure_floor_in_bounds!(floor)
       return if floor == @current_floor
 
-      @signals.exit_at(floor)
+      @stops.add(floor)
     end
 
     def stopping_at?(floor)
-      @signals.set?(floor)
+      @stops.include?(floor)
     end
 
     def contains?(person)
@@ -48,7 +47,7 @@ module Elevate
       return if floor_delta.zero?
 
       @current_floor += floor_delta
-      @signals.clear_on(@current_floor)
+      @stops.delete(@current_floor)
       direction = floor_delta.positive? ? :up : :down
       broadcast_stop(@current_floor, direction: direction)
       @current_floor.broadcast_stop(self, direction: direction)
