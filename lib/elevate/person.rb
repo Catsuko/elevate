@@ -3,19 +3,19 @@ require_relative 'events/wait_to_get_on'
 
 module Elevate
   class Person
-    def initialize(destination_floor)
-      @destination_floor = destination_floor
+    def initialize(destination)
+      @destination = destination
     end
 
-    def wait_for(elevator, from_floor:)
-      direction = from_floor < @destination_floor ? :up : :down
-      elevator.call_to(from_floor, direction: direction)
-      elevator.subscribe(Events::WaitToGetOn.new(self, floor: from_floor, direction: direction))
+    def wait_for_elevator(on:)
+      direction = on < @destination ? :up : :down
+      on.call_elevator(direction)
+      on.subscribe(Events::WaitToGetOn.new(self, floor: on, direction: direction))
     end
 
     def get_on(elevator)
       elevator.add(self)
-      elevator.select_destination(@destination_floor)
+      elevator.select_destination(@destination)
       elevator.subscribe(Events::WaitForDestination.new(self))
     end
 
@@ -24,7 +24,7 @@ module Elevate
     end
 
     def wants_to_get_off?(floor)
-      floor == @destination_floor
+      floor == @destination
     end
   end
 end

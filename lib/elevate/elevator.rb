@@ -7,7 +7,7 @@ module Elevate
 
     OutOfBoundsError = Class.new(StandardError) do
       def initialize(floor)
-        super("Floor #{floor} is out of bounds.")
+        super("Floor #{floor.to_i} is out of bounds.")
       end
     end
 
@@ -26,13 +26,6 @@ module Elevate
       @capacity = capacity
       @passengers = Set.new
       @signals = signals
-    end
-
-    def call_to(floor, direction:)
-      ensure_floor_in_bounds!(floor)
-      return if floor == @current_floor
-
-      @signals.enter_at(floor, direction: direction)
     end
 
     def select_destination(floor)
@@ -56,7 +49,9 @@ module Elevate
 
       @current_floor += floor_delta
       @signals.clear_on(@current_floor)
-      broadcast_stop(@current_floor, direction: floor_delta.positive? ? :up : :down)
+      direction = floor_delta.positive? ? :up : :down
+      broadcast_stop(@current_floor, direction: direction)
+      @current_floor.broadcast_stop(self, direction: direction)
     end
 
     def add(person)

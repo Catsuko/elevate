@@ -1,9 +1,11 @@
 require 'elevate/person'
 require 'elevate/elevator'
+require 'elevate/floor'
 
 RSpec.describe Elevate::Person do
-  let(:destination) { 20 }
-  let(:elevator) { Elevate::Elevator.new(1..destination, current_floor: 1, capacity: 1) }
+  let(:floors) { 3.times.map { |n| Elevate::Floor.new(n + 1) } }
+  let(:destination) { floors.max }
+  let(:elevator) { Elevate::Elevator.new(floors, current_floor: floors.min, capacity: 1) }
   let(:person) { described_class.new(destination) }
 
   describe '#wants_to_get_off?' do
@@ -32,7 +34,7 @@ RSpec.describe Elevate::Person do
     it 'stays on the elevator as it stops at other floors' do
       subject
       expect do
-        elevator.broadcast_stop(destination.pred, travel_direction: :up)
+        elevator.broadcast_stop(floors[1], travel_direction: :up)
       end.not_to change { elevator.contains?(person) }.from(true)
     end
 
@@ -54,34 +56,26 @@ RSpec.describe Elevate::Person do
     end
   end
 
-  describe '#wait_for' do
-    let(:from_floor) { 2 }
-    subject { person.wait_for(elevator, from_floor: from_floor) }
+  describe '#wait_for_elevator' do
+    let(:from_floor) { floors[1] }
+    subject { person.wait_for_elevator(on: from_floor) }
 
     it 'calls the elevator to their floor' do
-      expect { subject }.to change { elevator.stopping_at?(from_floor) }.from(false).to(true)
-    end
-
-    # From domain point of view, this is weird to test for, see comment in `events\wait_to_get_on.rb`.
-    it 'does not enter the elevator when it arrives at other floors' do
-      subject
-      expect do
-        elevator.broadcast_stop(destination, travel_direction: :up)
-      end.not_to change { elevator.contains?(person) }.from(false)
+      expect { subject }.to change { from_floor.calling?(:up) }.from(false).to(true)
     end
 
     context 'when the elevator reaches their floor' do
       it 'enters when it is travelling in their direction' do
         subject
         expect do
-          elevator.broadcast_stop(from_floor, travel_direction: :up)
+          from_floor.broadcast_stop(elevator, travel_direction: :up)
         end.to change { elevator.contains?(person) }.from(false).to(true)
       end
 
       it 'does not enter when it is travelling in the other direction' do
         subject
         expect do
-          elevator.broadcast_stop(from_floor, travel_direction: :down)
+          from_floor.broadcast_stop(elevator, travel_direction: :down)
         end.not_to change { elevator.contains?(person) }.from(false)
       end
 
@@ -89,7 +83,7 @@ RSpec.describe Elevate::Person do
         elevator.add(described_class.new(destination))
         subject
         expect do
-          elevator.broadcast_stop(from_floor, travel_direction: :up)
+          from_floor.broadcast_stop(elevator, travel_direction: :up)
         end.not_to change { elevator.contains?(person) }.from(false)
       end
     end
