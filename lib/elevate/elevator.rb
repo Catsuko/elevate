@@ -16,7 +16,6 @@ module Elevate
       end
     end
 
-    # TODO: Refactor many instance variables into some cohesive components
     def initialize(floors, capacity:, current_floor:, stops: Set.new)
       @floors = floors
       ensure_floor_in_bounds!(current_floor)
@@ -42,6 +41,7 @@ module Elevate
       @passengers.include?(person)
     end
 
+    # TODO: Fix this method and added test coverage!!
     def update
       floor_delta = target_floor <=> @current_floor
       return if floor_delta.zero?
