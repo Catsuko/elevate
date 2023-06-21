@@ -1,6 +1,7 @@
 require 'elevate/person'
 require 'elevate/elevator'
 require 'elevate/floor'
+require 'elevate/router/max'
 
 RSpec.describe Elevate::Elevator do
   let(:floors) { 5.times.map { |n| Elevate::Floor.new(n + 1) } }
@@ -58,21 +59,47 @@ RSpec.describe Elevate::Elevator do
   end
 
   describe '#update' do
-    it 'moves one floor towards the target floor' do
-      skip('not implemented')
-    end
+    subject { elevator.update }
 
-    it 'does not stop' do
-      skip('not implemented')
+    context 'when the top floor is the target floor' do
+      let(:elevator) do
+        Elevate::Elevator.new(floors, current_floor: current_floor, capacity: 1, router: Elevate::Router::Max.new)
+      end
+
+      it 'moves one floor up' do
+        expect { subject }.to change { elevator.at?(floors[1]) }.from(false).to(true)
+      end
+
+      it 'does not stop' do
+        expect do |b|
+          elevator.on(:elevator_stopped, &b)
+          subject
+        end.not_to yield_control
+      end
     end
 
     context 'when the next floor is the target floor' do
-      it 'moves to the target floor' do
-        skip('not implemented')
+      it 'moves one floor up' do
+        expect { subject }.to change { elevator.at?(floors[1]) }.from(false).to(true)
       end
 
       it 'stops' do
-        skip('not implemented')
+        expect do |b|
+          elevator.on(:elevator_stopped, &b)
+          subject
+        end.to yield_with_args(hash_including(floor: floors[1], elevator: elevator))
+      end
+
+      it 'broadcasts stop on the floor' do
+        expect do |b|
+          floors[1].on(:elevator_stopped, &b)
+          subject
+        end.to yield_with_args(hash_including(floor: floors[1], elevator: elevator))
+      end
+
+      it 'removes floor as a destination' do
+        elevator.select_destination(floors[1])
+        expect { subject }.to change { elevator.stopping_at?(floors[1]) }.from(true).to(false)
       end
     end
   end

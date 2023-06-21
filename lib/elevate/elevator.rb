@@ -1,4 +1,5 @@
 require 'wisper_next'
+require_relative 'router/increment'
 
 module Elevate
   class Elevator
@@ -16,7 +17,7 @@ module Elevate
       end
     end
 
-    def initialize(floors, capacity:, current_floor:, stops: Set.new)
+    def initialize(floors, capacity:, current_floor:, stops: Set.new, router: Router::Increment.new)
       @floors = floors
       ensure_floor_in_bounds!(current_floor)
 
@@ -24,6 +25,7 @@ module Elevate
       @capacity = capacity
       @passengers = Set.new
       @stops = stops
+      @router = router
     end
 
     def select_destination(floor)
@@ -41,12 +43,15 @@ module Elevate
       @passengers.include?(person)
     end
 
-    # TODO: Fix this method and added test coverage!!
     def update
-      floor_delta = target_floor <=> @current_floor
+      target = target_floor
+      floor_delta = target <=> @current_floor
       return if floor_delta.zero?
 
-      @current_floor += floor_delta
+      @current_floor = @floors[@floors.index(@current_floor) + floor_delta]
+
+      return unless at?(target)
+
       @stops.delete(@current_floor)
       direction = floor_delta.positive? ? :up : :down
       broadcast_stop(@current_floor, direction: direction)
@@ -64,14 +69,18 @@ module Elevate
       @passengers.delete(person)
     end
 
-    def broadcast_stop(floor, travel_direction:)
-      broadcast(:elevator_stopped, elevator: self, floor: floor, direction: travel_direction)
+    def broadcast_stop(floor, direction:)
+      broadcast(:elevator_stopped, elevator: self, floor: floor, direction: direction)
+    end
+
+    def at?(floor)
+      @current_floor == floor
     end
 
     private
 
     def target_floor
-      @floors.max
+      @router.call(self, current_floor: @current_floor, floors: @floors)
     end
 
     def ensure_floor_in_bounds!(floor)

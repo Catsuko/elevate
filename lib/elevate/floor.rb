@@ -41,9 +41,9 @@ module Elevate
       direction == :up ? @up_signal : @down_signal
     end
 
-    def broadcast_stop(elevator, travel_direction:)
-      set_signal(false, direction: travel_direction)
-      broadcast(:elevator_stopped, elevator: elevator, floor: self, direction: travel_direction)
+    def broadcast_stop(elevator, direction:)
+      set_signal(false, direction: direction)
+      broadcast(:elevator_stopped, elevator: elevator, floor: self, direction: direction)
     end
 
     private

@@ -34,14 +34,14 @@ RSpec.describe Elevate::Person do
     it 'stays on the elevator as it stops at other floors' do
       subject
       expect do
-        elevator.broadcast_stop(floors[1], travel_direction: :up)
+        elevator.broadcast_stop(floors[1], direction: :up)
       end.not_to change { elevator.contains?(person) }.from(true)
     end
 
     it 'gets off when the elevator reaches their destination' do
       subject
       expect do
-        elevator.broadcast_stop(destination, travel_direction: :up)
+        elevator.broadcast_stop(destination, direction: :up)
       end.to change { elevator.contains?(person) }.from(true).to(false)
     end
   end
@@ -68,14 +68,14 @@ RSpec.describe Elevate::Person do
       it 'enters when it is travelling in their direction' do
         subject
         expect do
-          from_floor.broadcast_stop(elevator, travel_direction: :up)
+          from_floor.broadcast_stop(elevator, direction: :up)
         end.to change { elevator.contains?(person) }.from(false).to(true)
       end
 
       it 'does not enter when it is travelling in the other direction' do
         subject
         expect do
-          from_floor.broadcast_stop(elevator, travel_direction: :down)
+          from_floor.broadcast_stop(elevator, direction: :down)
         end.not_to change { elevator.contains?(person) }.from(false)
       end
 
@@ -83,7 +83,7 @@ RSpec.describe Elevate::Person do
         elevator.add(described_class.new(destination))
         subject
         expect do
-          from_floor.broadcast_stop(elevator, travel_direction: :up)
+          from_floor.broadcast_stop(elevator, direction: :up)
         end.not_to change { elevator.contains?(person) }.from(false)
       end
     end
