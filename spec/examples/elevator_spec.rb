@@ -78,6 +78,33 @@ RSpec.describe Elevate::Elevator do
       end
     end
 
+    context 'when the next stop is the top floor' do
+      let(:elevator) do
+        Elevate::Elevator.new(floors, current_floor: floors[-2], capacity: 1)
+      end
+
+      it 'stops and reverses direction' do
+        expect do |b|
+          elevator.on(:elevator_stopped, &b)
+          subject
+        end.to yield_with_args(hash_including(floor: floors[-1], direction: :down))
+      end
+    end
+
+    context 'when the next stop is the first floor' do
+      let(:elevator) do
+        router = Elevate::Router::PingPong.new(going_up: false)
+        Elevate::Elevator.new(floors, current_floor: floors[1], capacity: 1, router: router)
+      end
+
+      it 'stops and reverses direction' do
+        expect do |b|
+          elevator.on(:elevator_stopped, &b)
+          subject
+        end.to yield_with_args(hash_including(floor: floors[0], direction: :up))
+      end
+    end
+
     context 'when the next floor is the target floor' do
       it 'moves one floor up' do
         expect { subject }.to change { elevator.at?(floors[1]) }.from(false).to(true)
@@ -87,14 +114,14 @@ RSpec.describe Elevate::Elevator do
         expect do |b|
           elevator.on(:elevator_stopped, &b)
           subject
-        end.to yield_with_args(hash_including(floor: floors[1], elevator: elevator))
+        end.to yield_with_args(hash_including(floor: floors[1], elevator: elevator, direction: :up))
       end
 
       it 'broadcasts stop on the floor' do
         expect do |b|
           floors[1].on(:elevator_stopped, &b)
           subject
-        end.to yield_with_args(hash_including(floor: floors[1], elevator: elevator))
+        end.to yield_with_args(hash_including(floor: floors[1], elevator: elevator, direction: :up))
       end
 
       it 'removes floor as a destination' do

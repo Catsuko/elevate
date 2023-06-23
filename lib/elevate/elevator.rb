@@ -1,5 +1,5 @@
 require 'wisper_next'
-require_relative 'router/increment'
+require_relative 'router/ping_pong'
 
 module Elevate
   class Elevator
@@ -17,7 +17,7 @@ module Elevate
       end
     end
 
-    def initialize(floors, capacity:, current_floor:, stops: Set.new, router: Router::Increment.new)
+    def initialize(floors, capacity:, current_floor:, stops: Set.new, router: Router::PingPong.new)
       @floors = floors
       ensure_floor_in_bounds!(current_floor)
 
@@ -48,12 +48,13 @@ module Elevate
       floor_delta = target <=> @current_floor
       return if floor_delta.zero?
 
-      @current_floor = @floors[@floors.index(@current_floor) + floor_delta]
+      floor_index = @floors.index(@current_floor) + floor_delta
+      @current_floor = @floors[floor_index]
 
       return unless at?(target)
 
       @stops.delete(@current_floor)
-      direction = floor_delta.positive? ? :up : :down
+      direction = floor_delta.positive? == (floor_index <= 0 || floor_index >= @floors.size - 1) ? :down : :up
       broadcast_stop(@current_floor, direction: direction)
       @current_floor.broadcast_stop(self, direction: direction)
     end
