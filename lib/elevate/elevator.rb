@@ -78,6 +78,10 @@ module Elevate
       @current_floor == floor
     end
 
+    def to_s
+      "Elevator (#{@passengers.size}/#{@capacity})"
+    end
+
     private
 
     def target_floor

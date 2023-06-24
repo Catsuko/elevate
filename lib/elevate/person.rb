@@ -1,10 +1,14 @@
+require 'wisper_next'
 require_relative 'events/wait_for_destination'
 require_relative 'events/wait_to_get_on'
 
 module Elevate
   class Person
-    def initialize(destination)
+    include WisperNext.publisher
+
+    def initialize(destination, name: nil)
       @destination = destination
+      @name = name
     end
 
     def wait_for_elevator(on:)
@@ -17,14 +21,21 @@ module Elevate
       elevator.add(self)
       elevator.select_destination(@destination)
       elevator.subscribe(Events::WaitForDestination.new(self))
+      broadcast(:person_got_on, person: self)
     end
 
     def get_off(elevator)
       elevator.remove(self)
+      broadcast(:person_got_off, person: self, floor: @destination)
+      unsubscribe_all
     end
 
     def wants_to_get_off?(floor)
       floor == @destination
+    end
+
+    def to_s
+      "Person #{@name}".strip
     end
   end
 end
