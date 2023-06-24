@@ -43,6 +43,8 @@ module Elevate
       @passengers.include?(person)
     end
 
+    # TODO: broadcast stop event when staying on the same floor!
+    # TODO: investigate and fix issue where only one person is getting off due to #unsubscribe bug
     def update
       target = target_floor
       floor_delta = target <=> @current_floor
