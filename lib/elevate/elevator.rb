@@ -43,22 +43,20 @@ module Elevate
       @passengers.include?(person)
     end
 
-    # TODO: broadcast stop event when staying on the same floor!
     # TODO: investigate and fix issue where only one person is getting off due to #unsubscribe bug
     def update
       target = target_floor
       floor_delta = target <=> @current_floor
-      return if floor_delta.zero?
-
       floor_index = @floors.index(@current_floor) + floor_delta
-      @current_floor = @floors[floor_index]
 
-      return unless at?(target)
+      if floor_delta.zero?
+        direction = :idle
+      else
+        @current_floor = @floors[floor_index]
+        direction = floor_delta.positive? == (floor_index <= 0 || floor_index >= @floors.size - 1) ? :down : :up
+      end
 
-      @stops.delete(@current_floor)
-      direction = floor_delta.positive? == (floor_index <= 0 || floor_index >= @floors.size - 1) ? :down : :up
-      broadcast_stop(@current_floor, direction: direction)
-      @current_floor.broadcast_stop(self, direction: direction)
+      open_doors(target, direction: direction) if at?(target)
     end
 
     def add(person)
@@ -85,6 +83,12 @@ module Elevate
     end
 
     private
+
+    def open_doors(floor, direction:)
+      @stops.delete(floor)
+      broadcast_stop(floor, direction: direction)
+      floor.broadcast_stop(self, direction: direction)
+    end
 
     def target_floor
       @router.call(self, current_floor: @current_floor, floors: @floors)

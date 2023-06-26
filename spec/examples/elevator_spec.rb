@@ -129,5 +129,30 @@ RSpec.describe Elevate::Elevator do
         expect { subject }.to change { elevator.stopping_at?(floors[1]) }.from(true).to(false)
       end
     end
+
+    context 'when the current floor is the target floor' do
+      let(:elevator) do
+        router = Elevate::Router::Max.new
+        Elevate::Elevator.new(floors, current_floor: floors.max, capacity: 1, router: router)
+      end
+
+      it 'does not change floors' do
+        expect { subject }.not_to change { elevator.at?(floors.max) }.from(true)
+      end
+
+      it 'stops' do
+        expect do |b|
+          elevator.on(:elevator_stopped, &b)
+          subject
+        end.to yield_with_args(hash_including(floor: floors.max, elevator: elevator, direction: :idle))
+      end
+
+      it 'broadcasts stop on the floor' do
+        expect do |b|
+          floors.max.on(:elevator_stopped, &b)
+          subject
+        end.to yield_with_args(hash_including(floor: floors.max, elevator: elevator, direction: :idle))
+      end
+    end
   end
 end
