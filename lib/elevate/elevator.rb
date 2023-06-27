@@ -35,6 +35,7 @@ module Elevate
       @stops.add(floor)
     end
 
+    # TODO: Rename this method to focus on what the passenger wants rather than what the elevator will do
     def stopping_at?(floor)
       @stops.include?(floor)
     end
@@ -43,6 +44,7 @@ module Elevate
       @passengers.include?(person)
     end
 
+    # TODO: Refactor router out of elevator, change #update to #move_to(floor)
     def update
       target = target_floor
       floor_delta = target <=> @current_floor
@@ -58,6 +60,7 @@ module Elevate
       open_doors(target, direction: direction) if at?(target)
     end
 
+    # TODO: Remove #select_destination and add destination as an argument here
     def add(person)
       passengers = Set[person] + @passengers
       raise FullCapacityError, @capacity if passengers.size > @capacity
