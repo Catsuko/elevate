@@ -17,7 +17,9 @@ module Elevate
       elevator = Elevator.new(floors, capacity: elevator_capacity, current_floor: floors.min)
       elevator.subscribe(logger)
 
-      run_until_complete(elevator, floors: floors, progress: Events::SimulationProgress.new(goal: @total_users))
+      run_until_complete(elevator, floors: floors, progress: Events::SimulationProgress.new(goal: @total_users)) do |turns|
+        logger.on_completed(turns)
+      end
     end
 
     private
@@ -28,7 +30,9 @@ module Elevate
 
     def run_until_complete(elevator, floors:, progress:)
       user_count = 0
+      turns = 0
       until progress.completed?
+        turns += 1
         add_person(number: user_count, floors: floors) do |person|
           user_count += 1
           person.subscribe(progress)
@@ -36,6 +40,8 @@ module Elevate
         end
         elevator.update
       end
+
+      yield(turns) if block_given?
     end
 
     def add_person(number:, floors:)
