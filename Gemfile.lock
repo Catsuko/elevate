@@ -1,6 +1,7 @@
 GIT
-  remote: https://gitlab.com/kris.leech/wisper_next.git
-  revision: 8cc91618a57c5b7482f14dad2d7ea649bdf5b9f2
+  remote: https://github.com/Catsuko/wisper_next.git
+  revision: 6d069e1723acdbc1ef0b1fd84c0b1338842cab3f
+  branch: master
   specs:
     wisper_next (0.1.0)
 

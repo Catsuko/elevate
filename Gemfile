@@ -4,5 +4,5 @@ source 'https://rubygems.org' do
   gem 'rspec'
   gem 'rubocop'
   gem 'rubocop-rspec'
-  gem 'wisper_next', git: 'https://gitlab.com/kris.leech/wisper_next.git'
+  gem 'wisper_next', git: 'https://github.com/Catsuko/wisper_next.git', branch: 'master'
 end

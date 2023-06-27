@@ -43,7 +43,6 @@ module Elevate
       @passengers.include?(person)
     end
 
-    # TODO: investigate and fix issue where only one person is getting off due to #unsubscribe bug
     def update
       target = target_floor
       floor_delta = target <=> @current_floor
@@ -79,7 +78,7 @@ module Elevate
     end
 
     def to_s
-      "Elevator (#{@passengers.size}/#{@capacity})"
+      "Elevator [#{@passengers.map(&:name).join('|')}]"
     end
 
     private

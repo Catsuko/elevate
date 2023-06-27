@@ -5,7 +5,8 @@ require 'elevate/floor'
 RSpec.describe Elevate::Person do
   let(:floors) { 3.times.map { |n| Elevate::Floor.new(n + 1) } }
   let(:destination) { floors.max }
-  let(:elevator) { Elevate::Elevator.new(floors, current_floor: floors.min, capacity: 1) }
+  let(:capacity) { 1 }
+  let(:elevator) { Elevate::Elevator.new(floors, current_floor: floors.min, capacity: capacity) }
   let(:person) { described_class.new(destination) }
 
   describe '#wants_to_get_off?' do
@@ -43,6 +44,23 @@ RSpec.describe Elevate::Person do
       expect do
         elevator.broadcast_stop(destination, direction: :up)
       end.to change { elevator.contains?(person) }.from(true).to(false)
+    end
+
+    context 'when multiple people going to the same destination' do
+      let(:capacity) { 2 }
+      let(:other_person) { described_class.new(destination) }
+
+      subject do
+        other_person.get_on(elevator)
+        person.get_on(elevator)
+      end
+
+      it 'both get off' do
+        subject
+        expect do
+          elevator.broadcast_stop(destination, direction: :up)
+        end.to change { elevator.contains?(person) || elevator.contains?(other_person) }.from(true).to(false)
+      end
     end
   end
 

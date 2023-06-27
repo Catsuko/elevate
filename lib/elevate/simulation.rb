@@ -4,6 +4,8 @@ require_relative 'person'
 require_relative 'events/simulation_progress'
 require_relative 'events/logger'
 
+# TODO: Move Simulation into its own module and directory
+# TODO: Create Elevate entry point module that requires all of the core elevate classes
 module Elevate
   class Simulation
     def initialize(total_users:)

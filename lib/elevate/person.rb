@@ -37,5 +37,9 @@ module Elevate
     def to_s
       "Person #{@name}".strip
     end
+
+    def name
+      @name
+    end
   end
 end
