@@ -32,12 +32,11 @@ module Elevate
       @stops = stops
     end
 
-    # TODO: Rename this method to focus on what the passenger wants rather than what the elevator will do
-    def stopping_at?(floor)
+    def passenger_going_to?(floor)
       @stops.include?(floor)
     end
 
-    def contains?(person)
+    def passenger?(person)
       @passengers.include?(person)
     end
 

@@ -25,25 +25,25 @@ RSpec.describe Elevate::Person do
     subject { person.get_on(elevator) }
 
     it 'enters the elevator' do
-      expect { subject }.to change { elevator.contains?(person) }.from(false).to(true)
+      expect { subject }.to change { elevator.passenger?(person) }.from(false).to(true)
     end
 
     it 'adds stop at their destination' do
-      expect { subject }.to change { elevator.stopping_at?(destination) }.from(false).to(true)
+      expect { subject }.to change { elevator.passenger_going_to?(destination) }.from(false).to(true)
     end
 
     it 'stays on the elevator as it stops at other floors' do
       subject
       expect do
         elevator.broadcast_stop(floors[1], direction: :up)
-      end.not_to change { elevator.contains?(person) }.from(true)
+      end.not_to change { elevator.passenger?(person) }.from(true)
     end
 
     it 'gets off when the elevator reaches their destination' do
       subject
       expect do
         elevator.broadcast_stop(destination, direction: :up)
-      end.to change { elevator.contains?(person) }.from(true).to(false)
+      end.to change { elevator.passenger?(person) }.from(true).to(false)
     end
 
     context 'when multiple people going to the same destination' do
@@ -59,7 +59,7 @@ RSpec.describe Elevate::Person do
         subject
         expect do
           elevator.broadcast_stop(destination, direction: :up)
-        end.to change { elevator.contains?(person) || elevator.contains?(other_person) }.from(true).to(false)
+        end.to change { elevator.passenger?(person) || elevator.passenger?(other_person) }.from(true).to(false)
       end
     end
   end
@@ -70,7 +70,7 @@ RSpec.describe Elevate::Person do
     before { person.get_on(elevator) }
 
     it 'leaves the elevator' do
-      expect { subject }.to change { elevator.contains?(person) }.from(true).to(false)
+      expect { subject }.to change { elevator.passenger?(person) }.from(true).to(false)
     end
   end
 
@@ -87,14 +87,14 @@ RSpec.describe Elevate::Person do
         subject
         expect do
           from_floor.broadcast_stop(elevator, direction: :up)
-        end.to change { elevator.contains?(person) }.from(false).to(true)
+        end.to change { elevator.passenger?(person) }.from(false).to(true)
       end
 
       it 'does not enter when it is travelling in the other direction' do
         subject
         expect do
           from_floor.broadcast_stop(elevator, direction: :down)
-        end.not_to change { elevator.contains?(person) }.from(false)
+        end.not_to change { elevator.passenger?(person) }.from(false)
       end
 
       it 'does not enter when the elevator is full' do
@@ -102,7 +102,7 @@ RSpec.describe Elevate::Person do
         subject
         expect do
           from_floor.broadcast_stop(elevator, direction: :up)
-        end.not_to change { elevator.contains?(person) }.from(false)
+        end.not_to change { elevator.passenger?(person) }.from(false)
       end
     end
   end

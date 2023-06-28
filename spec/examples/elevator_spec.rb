@@ -13,7 +13,7 @@ RSpec.describe Elevate::Elevator do
     subject { elevator.add(person, destination: floors[1]) }
 
     it 'adds the person to the elevator' do
-      expect { subject }.to change { elevator.contains?(person) }.from(false).to(true)
+      expect { subject }.to change { elevator.passenger?(person) }.from(false).to(true)
     end
 
     it 'cannot add people beyond the capacity of the elevator' do
@@ -34,9 +34,9 @@ RSpec.describe Elevate::Elevator do
 
     it 'signals to make a stop at the floor' do
       floor = floors.max
-      expect { elevator.add(person, destination: floor) }.to change {
-                                                               elevator.stopping_at?(floor)
-                                                             }.from(false).to(true)
+      expect do
+        elevator.add(person, destination: floor)
+      end.to change { elevator.passenger_going_to?(floor) }.from(false).to(true)
     end
 
     it '🤦' do
@@ -51,7 +51,7 @@ RSpec.describe Elevate::Elevator do
 
     it 'removes the person from the elevator' do
       person.get_on(elevator)
-      expect { elevator.remove(person) }.to change { elevator.contains?(person) }.from(true).to(false)
+      expect { elevator.remove(person) }.to change { elevator.passenger?(person) }.from(true).to(false)
     end
 
     it 'has no effect if the person is not in the elevator' do
@@ -125,7 +125,7 @@ RSpec.describe Elevate::Elevator do
       it 'removes floor as a destination' do
         person = Elevate::Person.new(floors[1])
         person.get_on(elevator)
-        expect { subject }.to change { elevator.stopping_at?(floors[1]) }.from(true).to(false)
+        expect { subject }.to change { elevator.passenger_going_to?(floors[1]) }.from(true).to(false)
       end
     end
 
