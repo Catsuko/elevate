@@ -6,6 +6,8 @@ module Elevate
   class Person
     include WisperNext.publisher
 
+    attr_reader :name
+
     def initialize(destination, name: nil)
       @destination = destination
       @name = name
@@ -18,8 +20,7 @@ module Elevate
     end
 
     def get_on(elevator)
-      elevator.add(self)
-      elevator.select_destination(@destination)
+      elevator.add(self, destination: @destination)
       elevator.subscribe(Events::WaitForDestination.new(self))
       broadcast(:person_got_on, person: self)
     end
@@ -35,11 +36,7 @@ module Elevate
     end
 
     def to_s
-      "Person #{@name}".strip
-    end
-
-    def name
-      @name
+      "Person #{name}".strip
     end
   end
 end

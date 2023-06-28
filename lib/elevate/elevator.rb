@@ -17,6 +17,12 @@ module Elevate
       end
     end
 
+    IdiotError = Class.new(StandardError) do
+      def initialize
+        super('🤦')
+      end
+    end
+
     def initialize(floors, capacity:, current_floor:, stops: Set.new, router: Router::PingPong.new)
       @floors = floors
       ensure_floor_in_bounds!(current_floor)
@@ -26,13 +32,6 @@ module Elevate
       @passengers = Set.new
       @stops = stops
       @router = router
-    end
-
-    def select_destination(floor)
-      ensure_floor_in_bounds!(floor)
-      return if floor == @current_floor
-
-      @stops.add(floor)
     end
 
     # TODO: Rename this method to focus on what the passenger wants rather than what the elevator will do
@@ -60,12 +59,15 @@ module Elevate
       open_doors(target, direction: direction) if at?(target)
     end
 
-    # TODO: Remove #select_destination and add destination as an argument here
-    def add(person)
+    def add(person, destination:)
+      raise IdiotError if destination == @current_floor
+
+      ensure_floor_in_bounds!(destination)
       passengers = Set[person] + @passengers
       raise FullCapacityError, @capacity if passengers.size > @capacity
 
       @passengers = passengers
+      @stops.add(destination)
     end
 
     def remove(person)

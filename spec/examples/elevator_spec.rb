@@ -8,40 +8,41 @@ RSpec.describe Elevate::Elevator do
   let(:current_floor) { floors.min }
   let(:elevator) { Elevate::Elevator.new(floors, current_floor: current_floor, capacity: 1) }
 
-  describe '#select_destination' do
+  describe '#add' do
+    let(:person) { Elevate::Person.new(floors[1]) }
+    subject { elevator.add(person, destination: floors[1]) }
+
+    it 'adds the person to the elevator' do
+      expect { subject }.to change { elevator.contains?(person) }.from(false).to(true)
+    end
+
+    it 'cannot add people beyond the capacity of the elevator' do
+      Elevate::Person.new(floors[2]).get_on(elevator)
+      expect { subject }.to raise_error(described_class::FullCapacityError)
+    end
+
+    it 'adding the same person multiple times has no effect' do
+      elevator.add(person, destination: floors[1])
+      expect { subject }.not_to raise_error
+    end
+
     it 'cannot select a floor that is out of bounds' do
       [-1, 0, 999].map { |n| Elevate::Floor.new(n) }.each do |floor|
-        expect { elevator.select_destination(floor) }.to raise_error(described_class::OutOfBoundsError)
+        expect { elevator.add(person, destination: floor) }.to raise_error(described_class::OutOfBoundsError)
       end
     end
 
     it 'signals to make a stop at the floor' do
       floor = floors.max
-      expect { elevator.select_destination(floor) }.to change { elevator.stopping_at?(floor) }.from(false).to(true)
+      expect { elevator.add(person, destination: floor) }.to change {
+                                                               elevator.stopping_at?(floor)
+                                                             }.from(false).to(true)
     end
 
-    it 'does not signal to make a stop if on the current floor' do
+    it '🤦' do
       expect do
-        elevator.select_destination(current_floor)
-      end.not_to change { elevator.stopping_at?(current_floor) }.from(false)
-    end
-  end
-
-  describe '#add' do
-    let(:person) { Elevate::Person.new(floors[1]) }
-
-    it 'adds the person to the elevator' do
-      expect { elevator.add(person) }.to change { elevator.contains?(person) }.from(false).to(true)
-    end
-
-    it 'cannot add people beyond the capacity of the elevator' do
-      elevator.add(Elevate::Person.new(floors[2]))
-      expect { elevator.add(person) }.to raise_error(described_class::FullCapacityError)
-    end
-
-    it 'adding the same person multiple times has no effect' do
-      elevator.add(person)
-      expect { elevator.add(person) }.not_to raise_error
+        elevator.add(person, destination: current_floor)
+      end.to raise_error(Elevate::Elevator::IdiotError)
     end
   end
 
@@ -49,7 +50,7 @@ RSpec.describe Elevate::Elevator do
     let(:person) { Elevate::Person.new(floors[1]) }
 
     it 'removes the person from the elevator' do
-      elevator.add(person)
+      person.get_on(elevator)
       expect { elevator.remove(person) }.to change { elevator.contains?(person) }.from(true).to(false)
     end
 
@@ -125,7 +126,8 @@ RSpec.describe Elevate::Elevator do
       end
 
       it 'removes floor as a destination' do
-        elevator.select_destination(floors[1])
+        person = Elevate::Person.new(floors[1])
+        person.get_on(elevator)
         expect { subject }.to change { elevator.stopping_at?(floors[1]) }.from(true).to(false)
       end
     end

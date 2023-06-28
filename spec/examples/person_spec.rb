@@ -98,7 +98,7 @@ RSpec.describe Elevate::Person do
       end
 
       it 'does not enter when the elevator is full' do
-        elevator.add(described_class.new(destination))
+        described_class.new(destination).get_on(elevator)
         subject
         expect do
           from_floor.broadcast_stop(elevator, direction: :up)
