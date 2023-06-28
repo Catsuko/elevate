@@ -1,5 +1,4 @@
 require 'wisper_next'
-require_relative 'router/ping_pong'
 
 module Elevate
   class Elevator
@@ -23,7 +22,7 @@ module Elevate
       end
     end
 
-    def initialize(floors, capacity:, current_floor:, stops: Set.new, router: Router::PingPong.new)
+    def initialize(floors, capacity:, current_floor:, stops: Set.new)
       @floors = floors
       ensure_floor_in_bounds!(current_floor)
 
@@ -31,7 +30,6 @@ module Elevate
       @capacity = capacity
       @passengers = Set.new
       @stops = stops
-      @router = router
     end
 
     # TODO: Rename this method to focus on what the passenger wants rather than what the elevator will do
@@ -43,10 +41,12 @@ module Elevate
       @passengers.include?(person)
     end
 
-    # TODO: Refactor router out of elevator, change #update to #move_to(floor)
-    def update
-      target = target_floor
-      floor_delta = target <=> @current_floor
+    def move(driven_by:)
+      move_to(driven_by.call(self, floors: @floors, current_floor: @current_floor))
+    end
+
+    def move_to(floor)
+      floor_delta = floor <=> @current_floor
       floor_index = @floors.index(@current_floor) + floor_delta
 
       if floor_delta.zero?
@@ -56,7 +56,7 @@ module Elevate
         direction = floor_delta.positive? == (floor_index <= 0 || floor_index >= @floors.size - 1) ? :down : :up
       end
 
-      open_doors(target, direction: direction) if at?(target)
+      open_doors(floor, direction: direction) if at?(floor)
     end
 
     def add(person, destination:)
@@ -92,10 +92,6 @@ module Elevate
       @stops.delete(floor)
       broadcast_stop(floor, direction: direction)
       floor.broadcast_stop(self, direction: direction)
-    end
-
-    def target_floor
-      @router.call(self, current_floor: @current_floor, floors: @floors)
     end
 
     def ensure_floor_in_bounds!(floor)

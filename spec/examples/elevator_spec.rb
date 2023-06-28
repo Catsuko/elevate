@@ -59,13 +59,12 @@ RSpec.describe Elevate::Elevator do
     end
   end
 
-  describe '#update' do
-    subject { elevator.update }
+  describe '#move_to' do
+    let(:target_floor) { floors.max }
+    subject { elevator.move_to(target_floor) }
 
     context 'when the top floor is the target floor' do
-      let(:elevator) do
-        Elevate::Elevator.new(floors, current_floor: current_floor, capacity: 1, router: Elevate::Router::Max.new)
-      end
+      let(:elevator) { Elevate::Elevator.new(floors, current_floor: current_floor, capacity: 1) }
 
       it 'moves one floor up' do
         expect { subject }.to change { elevator.at?(floors[1]) }.from(false).to(true)
@@ -80,9 +79,7 @@ RSpec.describe Elevate::Elevator do
     end
 
     context 'when the next stop is the top floor' do
-      let(:elevator) do
-        Elevate::Elevator.new(floors, current_floor: floors[-2], capacity: 1)
-      end
+      let(:elevator) { Elevate::Elevator.new(floors, current_floor: floors[-2], capacity: 1) }
 
       it 'stops and reverses direction' do
         expect do |b|
@@ -93,10 +90,8 @@ RSpec.describe Elevate::Elevator do
     end
 
     context 'when the next stop is the first floor' do
-      let(:elevator) do
-        router = Elevate::Router::PingPong.new(going_up: false)
-        Elevate::Elevator.new(floors, current_floor: floors[1], capacity: 1, router: router)
-      end
+      let(:target_floor) { floors.min }
+      let(:elevator) { Elevate::Elevator.new(floors, current_floor: floors[1], capacity: 1) }
 
       it 'stops and reverses direction' do
         expect do |b|
@@ -107,6 +102,8 @@ RSpec.describe Elevate::Elevator do
     end
 
     context 'when the next floor is the target floor' do
+      let(:target_floor) { floors[1] }
+
       it 'moves one floor up' do
         expect { subject }.to change { elevator.at?(floors[1]) }.from(false).to(true)
       end
@@ -133,10 +130,7 @@ RSpec.describe Elevate::Elevator do
     end
 
     context 'when the current floor is the target floor' do
-      let(:elevator) do
-        router = Elevate::Router::Max.new
-        Elevate::Elevator.new(floors, current_floor: floors.max, capacity: 1, router: router)
-      end
+      let(:elevator) { Elevate::Elevator.new(floors, current_floor: target_floor, capacity: 1) }
 
       it 'does not change floors' do
         expect { subject }.not_to change { elevator.at?(floors.max) }.from(true)
